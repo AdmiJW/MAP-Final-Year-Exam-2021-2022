@@ -3,11 +3,13 @@ User Accounts
 User 1
 username: user1@gmail.com
 password: pwd123
+vHtbDLzAyWgXK14aR4gfAgvSvh23
 
 
 User 2
 username: user2@gmail.com
 password: pwd123
+JIJnBsfcP8hnL8qcvDLcthq3tXw2
 
 
 Firestore Data
@@ -33,7 +35,7 @@ Note documents belong to User 2:
 
 Document 1.
 About Firebase
-Firebase is Google’s mobile application development platform that helps you build, improve, and grow your app.
+Firebase is Googleï¿½s mobile application development platform that helps you build, improve, and grow your app.
 
 Document 2.
 What is Cloud Function?

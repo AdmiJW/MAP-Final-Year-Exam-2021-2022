@@ -1,63 +1,76 @@
 
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'app/index.dart';
+import 'models/note.dart';
 
 
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   static WidgetBuilder route() => (_) => const HomeScreen();
   const HomeScreen({Key? key}) : super(key: key);
+  @override State<HomeScreen> createState() => _HomeScreenState();
+}
+
+
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  List<Note> notes = [];
+  bool isLoading = true;
+
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) navigator.pushNamed(Routes.login);
+
+      FirebaseFirestore.instance
+        .collection('notes')
+        .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .snapshots()
+        .listen((snapshot) {
+          setState(() {
+            isLoading = false;
+            notes = snapshot.docs.map((doc) => Note.fromJson(doc.data())).toList();
+          });
+        });
+      
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar(),
+      appBar: appBar(notes.length),
       floatingActionButton: floatingActionButton(),
-      body: ListView.separated(
-        itemCount: 4,
-        separatorBuilder: (context, index) => const Divider(
-          color: Colors.blueGrey,
+      body: isLoading ?
+        const Center(child: CircularProgressIndicator()) :
+        ListView.separated(
+          itemCount: notes.length,
+          separatorBuilder: (context, index) => const Divider(color: Colors.blueGrey),
+          itemBuilder: (context, index) => noteTile(notes[index]),
         ),
-        itemBuilder: (context, index) => ListTile(
-          title: const Text('Note title'),
-          subtitle: const Text('Note content'),
-          onTap: () {},
-          onLongPress: () {},
-          trailing: SizedBox(
-            width: 110.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.blue,
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
 
-  AppBar appBar() {
+
+  AppBar appBar(int count) {
     return AppBar(
       title: const Text('My Notes'),
       actions: [
         CircleAvatar(
           backgroundColor: Colors.blue.shade200,
-          child: const Text(
-            '4',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22.0),
+          child: Text(
+            count.toString(),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22.0),
           ),
         ),
         const SizedBox(width: 10),
@@ -65,7 +78,34 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  
+  Widget noteTile(Note note) {
+    return ListTile(
+      title: Text(note.title ?? 'Untitled Note'),
+      subtitle: Text(note.content ?? ''),
+      onTap: () {},
+      onLongPress: () {},
+      trailing: SizedBox(
+        width: 110.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.blue),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.delete,
+                color: Colors.blue,
+              ),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget floatingActionButton() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
