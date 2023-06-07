@@ -1,0 +1,40 @@
+User Accounts
+-------------
+User 1
+username: user1@gmail.com
+password: pwd123
+
+
+User 2
+username: user2@gmail.com
+password: pwd123
+
+
+Firestore Data
+---------------
+Collection: notes
+
+Note documents belong to User 1:
+
+Document 1.
+What is Flutter?
+Flutter is an open-source UI framework for creating native mobile applications. It allows developers to build mobile applications a single codebase.
+
+Document 2.
+Stateful Widgets
+The widgets whose state can be altered once they are built are called stateful Widgets. 
+
+Document 3.
+Conditional (ternary) operator
+The conditional (ternary) operator in Dart takes three operands: a condition, first expression (if truthy) and second expression (if falsy).
+
+
+Note documents belong to User 2:
+
+Document 1.
+About Firebase
+Firebase is Google’s mobile application development platform that helps you build, improve, and grow your app.
+
+Document 2.
+What is Cloud Function?
+Cloud Functions allows you to trigger your code from Google Cloud, Firebase, and Google Assistant, or call it directly from any web, mobile, or backend application via HTTP. 
