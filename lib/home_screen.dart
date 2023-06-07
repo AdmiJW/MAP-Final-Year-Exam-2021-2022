@@ -36,6 +36,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  Future<void> deleteNote(Note note) async {
+    await FirebaseFirestore.instance
+      .collection('notes')
+      .doc(note.id)
+      .delete();
+    
+    scaffoldMessengerKey.currentState?.showSnackBar(
+      const SnackBar(content: Text('Note deleted'))
+    );
+  }
+
+
 
 
 
@@ -53,7 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
         .listen((snapshot) {
           setState(() {
             isLoading = false;
-            notes = snapshot.docs.map((doc) => Note.fromJson(doc.data())).toList();
+            notes = snapshot.docs.map((doc) {
+              Map<String, dynamic> data = doc.data();
+              data['id'] = doc.id;
+              return Note.fromJson(data);
+            }).toList();
           });
         });
       
@@ -110,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Icons.delete,
               color: Colors.blue,
             ),
-            onPressed: () {} ,
+            onPressed: () => deleteNote(note),
           ),
         ],
       ),
