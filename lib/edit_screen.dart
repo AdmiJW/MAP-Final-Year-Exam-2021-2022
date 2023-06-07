@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'app/index.dart';
 import 'models/note.dart';
@@ -42,6 +44,82 @@ class _EditScreenState extends State<EditScreen> {
   EditScreenArguments? args;
 
 
+  Future<void> onConfirm() async {
+    final title = _titleController.text;
+    final description = _descriptionController.text;
+
+    try {
+      if (args?.mode == EditScreenMode.create) {
+        await createNewNote(
+          FirebaseAuth.instance.currentUser!.uid,
+          title,
+          description,
+        );
+      } 
+      else if (args?.mode == EditScreenMode.edit) {
+        await updateNote(
+          title,
+          description,
+        );
+      }
+
+      navigator.pop();
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(content: Text('Note saved'))
+      );
+
+    } catch (e) {
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(e.toString()))
+      );
+    }
+  }
+
+
+  Future<DocumentReference<Map<String, dynamic>>> createNewNote(
+    String uid, 
+    String title,
+    String content
+  ) async {
+
+    if (uid.isEmpty) throw Exception('User ID is empty');
+    if (title.isEmpty) throw Exception('Title is empty');
+    if (content.isEmpty) throw Exception('Content is empty');
+
+    return FirebaseFirestore.instance
+      .collection('notes')
+      .add({
+        'uid': uid,
+        'title': title,
+        'content': content,
+      });
+  }
+
+
+  Future<void> updateNote(
+    String title,
+    String content
+  ) async {
+
+    final id = args?.note?.id;
+    
+    if (id == null) throw Exception('Note ID is null');
+    if (title.isEmpty) throw Exception('Title is empty');
+    if (content.isEmpty) throw Exception('Content is empty');
+
+    return FirebaseFirestore.instance
+      .collection('notes')
+      .doc(id)
+      .update({
+        'title': title,
+        'content': content,
+      });
+  }
+
+
+
+
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -75,7 +153,7 @@ class _EditScreenState extends State<EditScreen> {
 
     final confirmButton = IconButton(
       icon: const Icon(Icons.check_circle, size: 30),
-      onPressed: () {}
+      onPressed: onConfirm,
     );
 
     final cancelButton = IconButton(
