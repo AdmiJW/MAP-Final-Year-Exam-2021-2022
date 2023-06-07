@@ -1,11 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'app/index.dart';
 import 'models/note.dart';
+
+import 'edit_screen.dart';
 
 
 
@@ -36,6 +37,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  void viewNote(Note note) {
+    navigator.pushNamed(Routes.edit, arguments: EditScreenArguments(
+      mode: EditScreenMode.view,
+      note: note,
+    ));
+  }
+
+  void editNote(Note note) {
+    navigator.pushNamed(Routes.edit, arguments: EditScreenArguments(
+      mode: EditScreenMode.edit,
+      note: note,
+    ));
+  }
+
+  void addNewNote() {
+    navigator.pushNamed(Routes.edit, arguments: EditScreenArguments(
+      mode: EditScreenMode.create,
+    ));
+  }
+
+
+
   Future<void> deleteNote(Note note) async {
     await FirebaseFirestore.instance
       .collection('notes')
@@ -49,31 +72,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-
-
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) navigator.pushNamed(Routes.login);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-      FirebaseFirestore.instance
-        .collection('notes')
-        .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-        .snapshots()
-        .listen((snapshot) {
-          setState(() {
-            isLoading = false;
-            notes = snapshot.docs.map((doc) {
-              Map<String, dynamic> data = doc.data();
-              data['id'] = doc.id;
-              return Note.fromJson(data);
-            }).toList();
-          });
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) navigator.pushNamed(Routes.login);
+
+    FirebaseFirestore.instance
+      .collection('notes')
+      .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+      .snapshots()
+      .listen((snapshot) {
+        setState(() {
+          isLoading = false;
+          notes = snapshot.docs.map((doc) {
+            Map<String, dynamic> data = doc.data();
+            data['id'] = doc.id;
+            return Note.fromJson(data);
+          }).toList();
         });
-      
-    });
+      });
   }
 
 
@@ -119,14 +138,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.blue),
-            onPressed: () {},
+            onPressed: ()=> editNote(note),
           ),
           IconButton(
             icon: const Icon(
               Icons.delete,
               color: Colors.blue,
             ),
-            onPressed: () => deleteNote(note),
+            onPressed: ()=> deleteNote(note),
           ),
         ],
       ),
@@ -136,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: Text(note.title ?? 'Untitled Note'),
       subtitle: showContent ? Text(note.content ?? '') : null,
       trailing: editingToolsIndex == index ? trailingButtons : null,
-      onTap: () {},
+      onTap: () => viewNote(note),
       onLongPress: ()=> toggleEditingTools(index),
     );
   }
@@ -156,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
         FloatingActionButton(
           heroTag: 'add-note',
           tooltip: 'Add a new note',
-          onPressed: () {},
+          onPressed: addNewNote,
           child: const Icon(Icons.add),
         ),
       ],
