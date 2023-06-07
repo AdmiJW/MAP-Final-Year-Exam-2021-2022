@@ -20,7 +20,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
 
   List<Note> notes = [];
+  int editingToolsIndex = -1;
   bool isLoading = true;
+  bool showContent = true;
+
+
+  void toggleContent() {
+    setState(()=> showContent = !showContent);
+  }
+
+  
+  void toggleEditingTools(int index) {
+    int newIndex = index == editingToolsIndex ? -1 : index;
+    setState(() => editingToolsIndex = newIndex);
+  }
+
+
+
 
 
   @override
@@ -55,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ListView.separated(
           itemCount: notes.length,
           separatorBuilder: (context, index) => const Divider(color: Colors.blueGrey),
-          itemBuilder: (context, index) => noteTile(notes[index]),
+          itemBuilder: (context, index) => noteTile(notes[index], index),
         ),
     );
   }
@@ -78,31 +94,34 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget noteTile(Note note) {
+  Widget noteTile(Note note, int index) {
+
+    final trailingButtons = SizedBox(
+      width: 110.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.blue),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.delete,
+              color: Colors.blue,
+            ),
+            onPressed: () {} ,
+          ),
+        ],
+      ),
+    );
+
     return ListTile(
       title: Text(note.title ?? 'Untitled Note'),
-      subtitle: Text(note.content ?? ''),
+      subtitle: showContent ? Text(note.content ?? '') : null,
+      trailing: editingToolsIndex == index ? trailingButtons : null,
       onTap: () {},
-      onLongPress: () {},
-      trailing: SizedBox(
-        width: 110.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.delete,
-                color: Colors.blue,
-              ),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      onLongPress: ()=> toggleEditingTools(index),
     );
   }
 
@@ -113,8 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
         FloatingActionButton(
           heroTag: 'show-more',
           tooltip: 'Show less. Hide notes content',
-          onPressed: () {},
-          child: const Icon(Icons.menu)
+          onPressed: toggleContent,
+          child: Icon(
+            showContent? Icons.unfold_less : Icons.unfold_more,
+          )
         ),
         FloatingActionButton(
           heroTag: 'add-note',
